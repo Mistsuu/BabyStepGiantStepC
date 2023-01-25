@@ -377,7 +377,7 @@ void* __thread__dlog_sort_buffer(
 
     // Create a temporary buffer to have a place holder for swapping :)
     size_t slot_size_bytes = index_size_bytes + item_size_bytes;
-    char* temp_buf = (char*) malloc_exit_when_null(slot_size_bytes);
+    char* temp_slot_buf = (char*) malloc_exit_when_null(slot_size_bytes);
 
     // Queue for holding lo, hi values.
     que2 sort_queue;
@@ -385,7 +385,6 @@ void* __thread__dlog_sort_buffer(
 
     signed long LO = 0;
     signed long HI = n_size_t-1;
-    signed long PI;
 
     char* pivot;
     char* buffer_i = buffer;
@@ -395,44 +394,54 @@ void* __thread__dlog_sort_buffer(
     while (que2_pop(sort_queue, &LO, &HI)) {
         pivot    = buffer + HI * slot_size_bytes;
         buffer_i = buffer + LO * slot_size_bytes;
-        buffer_j = buffer + LO * slot_size_bytes;
-        PI       = LO;
-        while (buffer_j < pivot) {
-            // Swap i, j views if element is < pivot
+        buffer_j = buffer + HI * slot_size_bytes;
+
+        HI--;
+        buffer_j -= slot_size_bytes;
+
+        while (buffer_i <= buffer_j) {
+            if (memcmp(
+                    buffer_i + index_size_bytes, 
+                    pivot + index_size_bytes, 
+                    item_size_bytes
+                ) <= 0) {
+                    buffer_i += slot_size_bytes;
+                    LO++;
+                    continue;
+                }
+
             if (memcmp(
                     buffer_j + index_size_bytes, 
                     pivot + index_size_bytes, 
                     item_size_bytes
-                ) < 0) {
-                    // Swap i view with j view.
-                    memcpy(temp_buf, buffer_i, slot_size_bytes);
-                    memcpy(buffer_i, buffer_j, slot_size_bytes);
-                    memcpy(buffer_j, temp_buf, slot_size_bytes);
-
-                    // Update i view.
-                    buffer_i += slot_size_bytes;
-                    PI       += 1;
+                ) <= 0) {
+                    buffer_j -= slot_size_bytes;
+                    HI--;
+                    continue;
                 }
 
-            // Update j view.
-            buffer_j += slot_size_bytes;
+            memcpy(temp_slot_buf, buffer_i, slot_size_bytes);
+            memcpy(buffer_i, buffer_j, slot_size_bytes);
+            memcpy(buffer_j, temp_slot_buf, slot_size_bytes);
+
+            buffer_j -= slot_size_bytes;
+            buffer_i += slot_size_bytes;
+            HI--;
+            LO++;
         }
 
-        // Swap i view with pivot :)
-        memcpy(temp_buf, buffer_i, slot_size_bytes);
-        memcpy(buffer_i, pivot, slot_size_bytes);
-        memcpy(pivot, temp_buf, slot_size_bytes);
+        buffer_j += slot_size_bytes;
+        memcpy(temp_slot_buf, buffer_j, slot_size_bytes);
+        memcpy(buffer_j, pivot, slot_size_bytes);
+        memcpy(pivot, temp_slot_buf, slot_size_bytes);
 
-        // Append lookup indices to quicksort queue.
-        if (LO < PI-1)
-            que2_push(sort_queue, LO, PI-1);
-        if (PI+1 < HI)
-            que2_push(sort_queue, PI+1, HI);
-
+        HI++;
+        que2_push(sort_queue, LO, HI-1);
+        que2_push(sort_queue, HI+1, HI);
     }
 
     que2_free(sort_queue);
-    free(temp_buf);
+    free(temp_slot_buf);
 }
 
 void dlog_sort_buffer(
