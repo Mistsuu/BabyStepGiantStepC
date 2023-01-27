@@ -41,10 +41,10 @@ In `Makefile`, you can modify `BUILD` variable to `release`, `verbose`, `memchec
   ```
   curve: y^2 = x^3 + ax + b in GF(p)
   where:
-  	a = 1986076773346522069111732327339
-  	b = 808177731529494834911895879646
-  	p = 13276420418771432419898581447951
-  	
+    a = 1986076773346522069111732327339
+    b = 808177731529494834911895879646
+    p = 13276420418771432419898581447951
+
   generator_point = (12752653901711390718579996242468:9102988295173351464328400869432:1)
   generator_order = 857765763956341
   ```
@@ -80,11 +80,11 @@ Filling `L` and `R` with the above points. This part can be space-optimized by s
 
 ```
 +---------+-------------------------+
-|  index  |        X(index*G)		|
+|  index  |        X(index*G)       |
 +---------+-------------------------+
 ```
 
-We store `X` coordinates of the points only. Because if `X(l*G) == X((k-r*n)*G)`, we can still recover `k` from `k = l + r*n`, or `k = r*n - l `.
+We store `X` coordinates of the points only. Because if `X(l*G) == X((k-r*n)*G)`, we can still recover `k` from `k = l + r*n`, or `k = r*n - l`.
 
 I use multi-threading in this sub-operations to speed up the filling.
 
