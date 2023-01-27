@@ -50,8 +50,8 @@ In `Makefile`, you can modify `BUILD` variable to `release`, `verbose`, `memchec
   ```
 
   in the parent project from **10 minutes** to **35 seconds** using *4-cores* on **Intel(R) Core(TM) i5-10300H CPU @ 2.50GHz**.
-
 - Also reduces some more memory.
+  The Python predecessor took `1054355004 bytes = 1005.511 MB = 0.981944 GB`, while this program needs ***around*** `995779760 bytes = 949.649582 MB = 0.927392 GB` to produce the result.
 
 ### Bads ❌ 
 
